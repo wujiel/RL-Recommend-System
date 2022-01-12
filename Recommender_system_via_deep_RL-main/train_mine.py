@@ -19,7 +19,7 @@ MAX_EPISODE_NUM = 10
 # os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 if __name__ == "__main__":
-    print('Data loading...')
+    print('Data loading...aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
     # Loading datasets
     ratings_list = [i.strip().split("::") for i in open(os.path.join(DATA_DIR, 'ratings.dat'), 'r').readlines()]
