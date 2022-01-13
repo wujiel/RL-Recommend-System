@@ -1,3 +1,5 @@
-主要的算法都在recommender.py文件，sac改进的话主要改这里和actor，critic类
+主要的算法都在recommender.py文件，看它的train（）函数， sac改进的话主要改这里
+和actor，critic类的网络结构
 状态表示在state_representation文件里，时序状态改进的话在这儿改
-
+奖励的定义在环境类里envs.py
+年度报告讲得挺详细的其实
