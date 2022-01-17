@@ -22,6 +22,8 @@ class PriorityExperienceReplay(object):
         '''
         self.states = np.zeros((buffer_size, 3*embedding_dim), dtype=np.float32)
         self.actions = np.zeros((buffer_size, embedding_dim), dtype=np.float32)
+        self.means = np.zeros((buffer_size, embedding_dim), dtype=np.float32)
+        self.logvars = np.zeros((buffer_size, embedding_dim), dtype=np.float32)
         self.rewards = np.zeros((buffer_size), dtype=np.float32)
         self.next_states = np.zeros((buffer_size, 3*embedding_dim), dtype=np.float32)
         self.dones = np.zeros(buffer_size, np.bool)
@@ -34,9 +36,11 @@ class PriorityExperienceReplay(object):
         self.beta = 0.4
         self.beta_constant = 0.00001
 
-    def append(self, state, action, reward, next_state, done):
+    def append(self, state, action,mean,logvar, reward, next_state, done):
         self.states[self.crt_idx] = state
         self.actions[self.crt_idx] = action
+        self.means[self.crt_idx] = mean
+        self.logvars[self.crt_idx] = logvar
         self.rewards[self.crt_idx] = reward
         self.next_states[self.crt_idx] = next_state
         self.dones[self.crt_idx] = done
@@ -75,11 +79,13 @@ class PriorityExperienceReplay(object):
 
         batch_states = self.states[rd_idx]
         batch_actions = self.actions[rd_idx]
+        batch_means = self.means[rd_idx]
+        batch_logvars = self.logvars[rd_idx]
         batch_rewards = self.rewards[rd_idx]
         batch_next_states = self.next_states[rd_idx]
         batch_dones = self.dones[rd_idx]
 
-        return batch_states, batch_actions, batch_rewards, batch_next_states, batch_dones, np.array(weight_batch), index_batch
+        return batch_states, batch_actions, batch_means,batch_logvars,batch_rewards, batch_next_states, batch_dones, np.array(weight_batch), index_batch
 
     def update_priority(self, priority, index):
         self.sum_tree.update_prioirty(priority ** self.alpha, index)

@@ -1,3 +1,5 @@
+import keras
+
 from replay_buffer import PriorityExperienceReplay
 import tensorflow as tf
 import numpy as np
@@ -84,6 +86,43 @@ class DRRAgent:
             y_t[i] = rewards[i] + (1 - dones[i])*(self.discount_factor * q_values[i])
         return y_t
 
+    # 熵的计算
+    def calculate_entropy(self,states):
+        log_vars = self.actor.logvar_network(states)
+        # 转成numpy数组
+        log_vars = keras.backend.eval(log_vars)
+        entropies = []
+        for i in range(self.batch_size):
+            log_var = log_vars[i]
+            var = np.exp(log_var)
+            cov = np.diag(var)
+            det = np.linalg.det(cov)
+            # 多元高斯分布的熵,sac作者代码里用的概率密度的对数。
+            # 我对这里保持看法，因为如果计算熵涉及sample取值，而sample本身是随机取的，难道让随机性影响优化结果吗？
+            # 因此这里使用分布的熵，后面再调试吧
+            entropy = np.log(det)/2+(self.embedding_dim/2)*(np.log(2*np.pi)+1)
+            entropies.append(entropy)
+        entropies = np.array([entropies])
+        entropies = entropies.reshape((self.batch_size,1))
+        entropies = tf.constant(entropies, tf.float32)
+
+        return entropies
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def recommend_item(self, action, recommended_items, top_k=False, items_ids=None):
         if items_ids == None:
             items_ids = np.array(list(set(i for i in range(self.items_num)) - recommended_items))
@@ -128,13 +167,27 @@ class DRRAgent:
                 user_eb = self.embedding_network.get_layer('user_embedding')(np.array(user_id))
                 items_eb = self.embedding_network.get_layer('movie_embedding')(np.array(items_ids))
                 # items_eb = self.m_embedding_network.get_layer('movie_embedding')(np.array(items_ids))
-                ## SRM으로 state 출력
+                ## 状态生成
                 state = self.srm_ave([np.expand_dims(user_eb, axis=0), np.expand_dims(items_eb, axis=0)])
 
-                ## Action(ranking score) 출력
-                action = self.actor.network(state)
+                ## Action(ranking score)
+                # action = self.actor.network(state)
+                mean, log_var = self.actor.mean_network(state),self.actor.logvar_network(state)
+                mean_a = keras.backend.eval(mean)
+                log_var_a = keras.backend.eval(log_var)
+                mean0 = mean_a[0]
+                log_var0 = log_var_a[0]
+                var = np.exp(log_var0)
+                cov = np.diag(var)
 
-                ## ε-greedy exploration
+                x = np.random.multivariate_normal(mean0, cov)
+                x = np.array([x])
+                action = tf.constant(x, tf.float32)
+
+
+
+
+                ## ε-greedy exploration  ε贪婪探索
                 if self.epsilon > np.random.uniform() and not self.is_test:
                     self.epsilon -= self.epsilon_decay
                     action += np.random.normal(0,self.std,size=action.shape)
@@ -153,23 +206,26 @@ class DRRAgent:
                 # next_items_eb = self.m_embedding_network.get_layer('movie_embedding')(np.array(next_items_ids))
                 next_state = self.srm_ave([np.expand_dims(user_eb, axis=0), np.expand_dims(next_items_eb, axis=0)])
 
-                # buffer에 저장
-                self.buffer.append(state, action, reward, next_state, done)
+                # 把经历加入buffer里有，之后训练网络的时候进行经历重放
+                self.buffer.append(state, action,mean,log_var, reward, next_state, done)
                 
                 if self.buffer.crt_idx > 1 or self.buffer.is_full:
                     # Sample a minibatch
-                    batch_states, batch_actions, batch_rewards, batch_next_states, batch_dones, weight_batch, index_batch = self.buffer.sample(self.batch_size)
+                    batch_states, batch_actions,batch_means,batch_logvars, batch_rewards, batch_next_states, batch_dones, weight_batch, index_batch = self.buffer.sample(self.batch_size)
 
                     # Set TD targets
-                    target_next_action= self.actor.target_network(batch_next_states)
-                    # critic的网络和目标网络分别给动作打分
-                    qs = self.critic.network([target_next_action, batch_next_states])
-                    target_qs = self.critic.target_network([target_next_action, batch_next_states])
+                    target_next_mean,target_next_logvar= self.actor.target_mean_network(batch_next_states),self.actor.target_logvar_network(batch_next_states)
+                    # critic的网络和目标网络分别给下一状态动作打分以作为未来期望奖励
+                    qs = self.critic.network([target_next_mean,target_next_logvar, batch_next_states])
+                    target_qs = self.critic.target_network([target_next_mean,target_next_logvar, batch_next_states])
                     min_qs = tf.raw_ops.Min(input=tf.concat([target_qs, qs], axis=1), axis=1, keep_dims=True) # Double Q method
+                    # 计算熵
+                    entropy = self.calculate_entropy(batch_states)
+
                     # newQ = r+γ*nextQ
                     # nextQ = t_critic(next_s,next_a)
                     # next_a = t_actor(next_s)
-                    td_targets = self.calculate_td_target(batch_rewards, min_qs, batch_dones)
+                    td_targets = self.calculate_td_target(batch_rewards, min_qs, batch_dones) + entropy
         
                     # Update priority
                     for (p, i) in zip(td_targets, index_batch):
@@ -179,11 +235,20 @@ class DRRAgent:
                     # print(td_targets.shape)
                     # raise Exception
                     # Update critic network
-                    q_loss += self.critic.train([batch_actions, batch_states], td_targets, weight_batch)
+                    q_loss += self.critic.train([batch_means,batch_logvars, batch_states], td_targets, weight_batch)
                     
                     # Update actor network
-                    s_grads = self.critic.dq_da([batch_actions, batch_states])
-                    self.actor.train(batch_states, s_grads)
+
+                    # policy_loss = -entropy- min_qs
+                    # tf.train.AdamOptimizer(self.actor_learning_rate).minimize(
+                    #     loss=policy_loss,
+                    #     var_list=self.actor.network.get_params_internal()
+                    # )
+
+                    # q对a求导再a对actor的参数求导最后得到分值对actor网络参数的导数，朝着使分值增大的方向优化，传反梯度
+                    s_grads1,s_grads2 = self.critic.dq_da([batch_means,batch_logvars, batch_states])
+
+                    self.actor.train(batch_states, s_grads1,s_grads1)
                     self.actor.update_target_network()
                     self.critic.update_target_network()
 
@@ -210,12 +275,12 @@ class DRRAgent:
                 plt.savefig('training_precision__'+str(episode+1)+'__%_top_5.png')
                 plt.clf()
 
-            if (episode+1)%1000 == 0:
-                self.save_model(r'save_weights\actor_'+str(episode+1)+'_fixed.h5',
+            if (episode+1)%100 == 0:
+                self.save_model(r'save_weights\actor_mean'+str(episode+1)+'_fixed.h5',r'save_weights\actor_logvar'+str(episode+1)+'_fixed.h5',
                                 r'save_weights\critic_'+str(episode+1)+'_fixed.h5')
 
-    def save_model(self, actor_path, critic_path):
-        self.actor.save_weights(actor_path)
+    def save_model(self, actor_mean_path,actor_logvar_path, critic_path):
+        self.actor.save_weights(actor_mean_path,actor_logvar_path)
         self.critic.save_weights(critic_path)
         
     def load_model(self, actor_path, critic_path):
