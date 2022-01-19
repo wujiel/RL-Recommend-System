@@ -88,20 +88,36 @@ class DRRAgent:
 
     # 熵的计算
     def calculate_entropy(self,states):
+        means = self.actor.mean_network(states)
         log_vars = self.actor.logvar_network(states)
         # 转成numpy数组
+        means = keras.backend.eval(means)
         log_vars = keras.backend.eval(log_vars)
         entropies = []
         for i in range(self.batch_size):
+            mean = means[i]
             log_var = log_vars[i]
             var = np.exp(log_var)
             cov = np.diag(var)
+            # 重采样
+            x = np.random.multivariate_normal(mean, cov)
+            # 逆协方差矩阵
+            cov_inverse = np.linalg.inv(cov)
+            alpha = x-mean
+            temp1 = np.dot(alpha,cov_inverse)
+            temp2 = np.dot(temp1,alpha)/2
+
+
+
             det = np.linalg.det(cov)
             # 多元高斯分布的熵,sac作者代码里用的概率密度的对数。
             # 我对这里保持看法，因为如果计算熵涉及sample取值，而sample本身是随机取的，难道让随机性影响优化结果吗？
-            # 因此这里使用分布的熵，后面再调试吧
-            entropy = np.log(det)/2+(self.embedding_dim/2)*(np.log(2*np.pi)+1)
-            entropies.append(entropy)
+            # 分布的熵
+            # entropy1 = np.log(det)/2+(self.embedding_dim/2)*(np.log(2*np.pi)+1)
+            # 直接-logP，概率密度值
+            entropy = np.log( (np.pi**50) * (det**(1/2)) ) + temp2
+            # 归一化到一维（但就算是一维-log概率密度值也是可能大于1的）
+            entropies.append(0.3*entropy/100)
         entropies = np.array([entropies])
         entropies = entropies.reshape((self.batch_size,1))
         entropies = tf.constant(entropies, tf.float32)
@@ -170,7 +186,7 @@ class DRRAgent:
                 ## 状态生成
                 state = self.srm_ave([np.expand_dims(user_eb, axis=0), np.expand_dims(items_eb, axis=0)])
 
-                ## Action(ranking score)
+                ## Action(ranking score)动作生成
                 # action = self.actor.network(state)
                 mean, log_var = self.actor.mean_network(state),self.actor.logvar_network(state)
                 mean_a = keras.backend.eval(mean)
@@ -188,9 +204,9 @@ class DRRAgent:
 
 
                 ## ε-greedy exploration  ε贪婪探索
-                if self.epsilon > np.random.uniform() and not self.is_test:
-                    self.epsilon -= self.epsilon_decay
-                    action += np.random.normal(0,self.std,size=action.shape)
+                # if self.epsilon > np.random.uniform() and not self.is_test:
+                #     self.epsilon -= self.epsilon_decay
+                #     action += np.random.normal(0,self.std,size=action.shape)
 
                 ## Item 추천
                 recommended_item = self.recommend_item(action, self.env.recommended_items, top_k=top_k)
@@ -272,12 +288,12 @@ class DRRAgent:
              
             if (episode+1)%50 == 0:
                 plt.plot(episodic_precision_history[len(episodic_precision_history)-50:len(episodic_precision_history)])
-                plt.savefig('training_precision__'+str(episode+1)+'__%_top_5.png')
+                plt.savefig(r'precisionimages1\training_precision__'+str(episode+1)+'__%_top_5.png')
                 plt.clf()
 
             if (episode+1)%100 == 0:
-                self.save_model(r'save_weights\actor_mean'+str(episode+1)+'_fixed.h5',r'save_weights\actor_logvar'+str(episode+1)+'_fixed.h5',
-                                r'save_weights\critic_'+str(episode+1)+'_fixed.h5')
+                self.save_model(r'weights\actor_mean'+str(episode+1)+'_fixed.h5',r'weights\actor_logvar'+str(episode+1)+'_fixed.h5',
+                                r'weights\critic_'+str(episode+1)+'_fixed.h5')
 
     def save_model(self, actor_mean_path,actor_logvar_path, critic_path):
         self.actor.save_weights(actor_mean_path,actor_logvar_path)

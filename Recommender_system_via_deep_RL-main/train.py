@@ -14,7 +14,7 @@ import os
 ROOT_DIR = os.getcwd()
 DATA_DIR = os.path.join(ROOT_DIR, 'ml-1m/')
 STATE_SIZE = 10
-MAX_EPISODE_NUM = 10
+MAX_EPISODE_NUM = 10000;
 
 # os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
