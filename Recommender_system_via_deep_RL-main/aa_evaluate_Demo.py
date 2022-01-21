@@ -173,9 +173,9 @@ def evaluate(recommender, env, check_movies = False, top_k=False):
         items_eb = recommender.embedding_network.get_layer('movie_embedding')(np.array(items_ids))
         ## SRM으로 state 출력
         state = recommender.srm_ave([np.expand_dims(user_eb, axis=0), np.expand_dims(items_eb, axis=0)])
-        ## Action(ranking score) 출력
+        ## Action
         action = recommender.actor.network(state)
-        ## Item 추천
+        ## Item
         recommended_item = recommender.recommend_item(action, env.recommended_items, top_k=top_k)
         if check_movies:
             print(f'recommended items ids : {recommended_item}')
