@@ -1,5 +1,6 @@
-主要的算法都在recommender.py文件，看它的train（）函数， sac改进的话主要改这里
-和actor，critic类的网络结构
-状态表示在state_representation文件里，时序状态改进的话在这儿改
-奖励的定义在环境类里envs.py
-年度报告讲得挺详细的其实
+环境模拟只返回在历史记录中真实存在的评分
+推荐系统本质是在线实时推荐的
+状态表示模块两个网络，两种构型
+sac_actor四个同构网络
+sac_critic两个同构网络
+
