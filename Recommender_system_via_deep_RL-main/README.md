@@ -3,4 +3,13 @@
 状态表示模块两个网络，两种构型
 sac_actor四个同构网络
 sac_critic两个同构网络
+Merge remote-tracking branch 'origin/master
+基本完成了模块化和重写，现在可以说这个代码是我们的代码了
+目前还没有训练，会先以随机推荐为基准优化
+整个系统使用的网络有三种构型
+embedding网络
+state—representation网络
+actor—critic网络
+理论上来说每一种网络都会影响推荐系统的性能
+目前推荐系统有随机推荐和sac推荐
 
