@@ -1,4 +1,5 @@
 from replay_buffer import PriorityExperienceReplay
+from ExperienceBuffer import DdpgBuffer
 from actor import SacActor, DdpgActor
 from critic import SacCritic, DdpgCritic
 from Dataloader import Dataloader
@@ -43,24 +44,33 @@ def RecommenderInitialization():
     # actor
     sac_actor = SacActor(state_dim=300, hidden_dim=128, action_dim=100, learning_rate=0.001,
                          target_network_update_rate=0.001)
-    # ddpg_actor = DdpgActor()
-
     # critic
     sac_critic = SacCritic(state_dim=300, action_dim=100, hidden_dim=128, learning_rate=0.001,
                            target_network_update_rate=0.001)
-    # ddpg_critic = DdpgCritic()
-
     # 经历重放容器
-    buffer = PriorityExperienceReplay(buffer_size=1000000, embedding_dim=100)
+    sac_buffer = PriorityExperienceReplay(buffer_size=1000000, embedding_dim=100)
 
-    return environment_train, environment_eval, representationModel, sac_critic, sac_actor, buffer
+    # actor
+    ddpg_actor = DdpgActor(state_dim=300, hidden_dim=128, action_dim=100, learning_rate=0.001,
+                         target_network_update_rate=0.001)
+    # critic
+    ddpg_critic = DdpgCritic(state_dim=300, action_dim=100, hidden_dim=128, learning_rate=0.001,
+                           target_network_update_rate=0.001)
+    # 经历重放容器
+    ddpg_buffer = DdpgBuffer(buffer_size=1000000, embedding_dim=100)
+
+    return environment_train, environment_eval, representationModel, sac_critic, sac_actor, sac_buffer,ddpg_critic, ddpg_actor, ddpg_buffer
 
 
 # 状态表示模块两个网络，actor四个网络，critic两个网络，总共八个网络
-environment_train, environment_eval, representationModel, sac_critic, sac_actor, buffer = RecommenderInitialization()
+environment_train, environment_eval, representationModel, sac_critic, sac_actor, sac_buffer,ddpg_critic, ddpg_actor, ddpg_buffer = RecommenderInitialization()
 
 recommend_system = RecommendSystem(env=environment_train, representation_model=representationModel, sac_actor=sac_actor,
-                                   sac_critic=sac_critic, sac_buffer=buffer)
+                                   sac_critic=sac_critic, sac_buffer=sac_buffer, ddpg_actor=ddpg_actor,
+                                   ddpg_critic=ddpg_critic, ddpg_buffer=ddpg_buffer)
 
-recommend_system.train(max_episode_num=100)
+recommend_system.ddpg_critic.load_weights(r'actor_critic_weights/ddpg/critic_1600.h5')
+recommend_system.ddpg_actor.load_weights(r'actor_critic_weights/ddpg/actor_1600.h5')
+print("已加载ddpg")
+recommend_system.train(max_episode_num=8000)
 print("shit")

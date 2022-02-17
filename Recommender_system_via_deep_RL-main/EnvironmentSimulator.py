@@ -20,6 +20,17 @@ def count_positive_rates(rates_list):
             count += 1
     return count
 
+
+def sum_positive_reward(rates_list):
+    sum = 0
+    for rate in rates_list:
+        if rate == 4:
+            sum += 1
+        if rate == 5:
+            sum += 2
+    return sum
+
+
 class EnvironmentSimulator(object):
 
     def __init__(self, users_history_dict, lens_list, positive_lens_list, movies_information, short_term_state_size,
@@ -47,6 +58,9 @@ class EnvironmentSimulator(object):
         self.recommend_space_train_rates = [data[1] for data in self.users_history_dict[self.user][self.short_term_state_size:]]
         # 推荐空间积极评价的数量
         self.positive_rates_count = count_positive_rates(self.recommend_space_train_rates)
+
+        # 推荐空间积极评价的总回报
+        self.positive_rewards_sum = sum_positive_reward(self.recommend_space_train_rates)
 
         # 短期模式包含的交互项目
         self.short_term_ids = [data[0] for data in self.users_history_dict[self.user][:self.short_term_state_size]]
@@ -82,6 +96,9 @@ class EnvironmentSimulator(object):
         self.recommend_space_train_rates = [data[1] for data in self.users_history_dict[self.user][self.short_term_state_size:]]
         # 推荐空间积极评价的数量
         self.positive_rates_count = count_positive_rates(self.recommend_space_train_rates)
+        # 推荐空间积极评价的总回报
+        self.positive_rewards_sum = sum_positive_reward(self.recommend_space_train_rates)
+
         self.done = False
         self.recommended_items = set(self.short_term_ids)
         # 短期模式包含的交互项目

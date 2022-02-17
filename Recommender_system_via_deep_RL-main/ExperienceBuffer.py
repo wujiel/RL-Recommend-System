@@ -1,33 +1,31 @@
-import numpy
+import numpy as np
 from tree import SumTree, MinTree
 import random
 
 
-class ExperienceBuffer(object):
+class DdpgBuffer(object):
     '''
     apply PER
     '''
 
-    def __init__(self, buffer_size, state_dim,actiondim):
+    def __init__(self, buffer_size, embedding_dim):
         self.buffer_size = buffer_size
         self.crt_idx = 0
         self.is_full = False
 
         '''
-        各个向量维度
+        各向量维度
             state : (300,), 
-            next_state : (300,) 
+            next_state : (300,) , 
             actions : (100,), 
             rewards : (1,), 
             dones : (1,)
         '''
-        self.states = numpy.zeros((buffer_size, 3 * embedding_dim), dtype=numpy.float32)
-        self.actions = numpy.zeros((buffer_size, embedding_dim), dtype=numpy.float32)
-        self.means = numpy.zeros((buffer_size, embedding_dim), dtype=numpy.float32)
-        self.logvars = numpy.zeros((buffer_size, embedding_dim), dtype=numpy.float32)
-        self.rewards = numpy.zeros((buffer_size), dtype=numpy.float32)
-        self.next_states = numpy.zeros((buffer_size, 3 * embedding_dim), dtype=numpy.float32)
-        self.dones = numpy.zeros(buffer_size, numpy.bool)
+        self.states = np.zeros((buffer_size, 3 * embedding_dim), dtype=np.float32)
+        self.actions = np.zeros((buffer_size, embedding_dim), dtype=np.float32)
+        self.rewards = np.zeros((buffer_size), dtype=np.float32)
+        self.next_states = np.zeros((buffer_size, 3 * embedding_dim), dtype=np.float32)
+        self.dones = np.zeros(buffer_size, np.bool)
 
         self.sum_tree = SumTree(buffer_size)
         self.min_tree = MinTree(buffer_size)
@@ -37,11 +35,9 @@ class ExperienceBuffer(object):
         self.beta = 0.4
         self.beta_constant = 0.00001
 
-    def append(self, state, action, mean, logvar, reward, next_state, done):
+    def append(self, state, action, reward, next_state, done):
         self.states[self.crt_idx] = state
         self.actions[self.crt_idx] = action
-        self.means[self.crt_idx] = mean
-        self.logvars[self.crt_idx] = logvar
         self.rewards[self.crt_idx] = reward
         self.next_states[self.crt_idx] = next_state
         self.dones[self.crt_idx] = done
@@ -80,13 +76,11 @@ class ExperienceBuffer(object):
 
         batch_states = self.states[rd_idx]
         batch_actions = self.actions[rd_idx]
-        batch_means = self.means[rd_idx]
-        batch_logvars = self.logvars[rd_idx]
         batch_rewards = self.rewards[rd_idx]
         batch_next_states = self.next_states[rd_idx]
         batch_dones = self.dones[rd_idx]
 
-        return batch_states, batch_actions, batch_means, batch_logvars, batch_rewards, batch_next_states, batch_dones, numpy.array(
+        return batch_states, batch_actions, batch_rewards, batch_next_states, batch_dones, np.array(
             weight_batch), index_batch
 
     def update_priority(self, priority, index):
