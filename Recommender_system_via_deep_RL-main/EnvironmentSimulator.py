@@ -34,7 +34,7 @@ def sum_positive_reward(rates_list):
 class EnvironmentSimulator(object):
 
     def __init__(self, users_history_dict, lens_list, positive_lens_list, movies_information, short_term_state_size,
-                 specify_user_id=None):
+                 specify_user_id=None,top_k=1):
 
         # 用户历史记录，已经以时间排序
         self.users_history_dict = users_history_dict
@@ -42,12 +42,10 @@ class EnvironmentSimulator(object):
         self.lens_list = lens_list
         # 用户的好评历史长度
         self.positive_lens_list = positive_lens_list
-        # 指定用户id
-        self.specify_user_id = specify_user_id
         # 表示最近short_term_state_size个历史交互记录来表示短期模式,用来生成可用的模拟用户，（记录长度不够的话就不可用）
         self.short_term_state_size = short_term_state_size
         # 可模拟用户列表
-        self.available_users = self._generate_available_users()
+        self.available_users = self._generate_available_users(top_k)
         # 指定用户或者从可模拟用户列表中随机选择用户id
         self.user = specify_user_id if specify_user_id else np.random.choice(self.available_users)
         # 当前模拟用户的历史交互项目,包含评价，dict是无序的，但users_history_dict[self.user]是一个元祖列表
@@ -79,10 +77,17 @@ class EnvironmentSimulator(object):
         self.movies_information = movies_information
 
     # 生成可用的模拟用户，（记录长度不够的话就不可用）
-    def _generate_available_users(self):
+    # def _generate_available_users(self):
+    #     available_users = []
+    #     for i, length in zip(self.users_history_dict.keys(), self.lens_list):
+    #         if length > self.short_term_state_size:
+    #             available_users.append(i)
+    #     return available_users
+
+    def _generate_available_users(self,top_k=1):
         available_users = []
         for i, length in zip(self.users_history_dict.keys(), self.lens_list):
-            if length > self.short_term_state_size:
+            if length > self.short_term_state_size + top_k:
                 available_users.append(i)
         return available_users
 

@@ -36,7 +36,7 @@ def RecommenderInitialization():
     environment_eval = EnvironmentSimulator(short_term_state_size=10, users_history_dict=users_history_dict_eval,
                                             lens_list=lens_list_eval,
                                             positive_lens_list=positive_lens_list_eval,
-                                            movies_information=movies_id_to_movies)
+                                            movies_information=movies_id_to_movies,top_k=10)
 
     # 状态标识模块
     representationModel = RepresentationModel(short_term_state_size=10)
@@ -69,8 +69,23 @@ recommend_system = RecommendSystem(env=environment_train, representation_model=r
                                    sac_critic=sac_critic, sac_buffer=sac_buffer, ddpg_actor=ddpg_actor,
                                    ddpg_critic=ddpg_critic, ddpg_buffer=ddpg_buffer)
 
-recommend_system.ddpg_critic.load_weights(r'actor_critic_weights/ddpg/critic_1600.h5')
-recommend_system.ddpg_actor.load_weights(r'actor_critic_weights/ddpg/actor_1600.h5')
+recommend_system_eval = RecommendSystem(env=environment_eval, representation_model=representationModel, sac_actor=sac_actor,
+                                   sac_critic=sac_critic, sac_buffer=sac_buffer, ddpg_actor=ddpg_actor,
+                                   ddpg_critic=ddpg_critic, ddpg_buffer=ddpg_buffer)
+
+recommend_system.ddpg_critic.load_weights(r'actor_critic_weights/ddpg/critic_5000.h5')
+recommend_system.ddpg_actor.load_weights(r'actor_critic_weights/ddpg/actor_5000.h5')
+recommend_system.sac_critic.load_weights(r'actor_critic_weights/sac/critic_5000.h5')
+recommend_system.sac_actor.load_weights(r'actor_critic_weights/sac/actor_mean5000.h5',r'actor_critic_weights/sac/actor_logvar5000.h5')
+
+recommend_system.ddpg_critic.load_weights(r'actor_critic_weights/ddpg/critic_5000.h5')
+recommend_system.ddpg_actor.load_weights(r'actor_critic_weights/ddpg/actor_5000.h5')
+recommend_system.sac_critic.load_weights(r'actor_critic_weights/sac/critic_5000.h5')
+recommend_system.sac_actor.load_weights(r'actor_critic_weights/sac/actor_mean5000.h5',r'actor_critic_weights/sac/actor_logvar5000.h5')
+
+
+
 print("已加载ddpg")
+recommend_system_eval.evaluation(max_user_id=6400,top_k=10)
 recommend_system.train(max_episode_num=8000)
 print("shit")

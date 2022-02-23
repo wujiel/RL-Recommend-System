@@ -403,37 +403,72 @@ class RecommendSystem:
                     ddpg_real_episodic_precision_history.append(ddpg_precision_real)
                     sac_ddpg_gap_episodic_precision_history.append(sac_ddpg_gap)
                     print()
+            if episode == 2:
+                plt.title(str(episode + 1) + 'episode')  # 标题
 
-            if (episode + 1) % 50 == 0:
-                # 画图
-                plt.title(str(episode + 1)+'episode')  # 标题
-
-                plt.plot(sac_episodic_precision_history[len(sac_episodic_precision_history) - 50:len(sac_episodic_precision_history)],label='sac')
-                plt.plot(ddpg_episodic_precision_history[len(ddpg_episodic_precision_history) - 50:len(ddpg_episodic_precision_history)],label='ddpg')
-                plt.plot(random_episodic_precision_history[len(random_episodic_precision_history) - 50:len(random_episodic_precision_history)],label='random')
-                plt.plot(sac_real_episodic_precision_history[len(sac_real_episodic_precision_history) - 50:len(sac_real_episodic_precision_history)],label='sac_real')
-                plt.plot(ddpg_real_episodic_precision_history[len(ddpg_real_episodic_precision_history) - 50:len(ddpg_real_episodic_precision_history)],label='ddpg_tral')
-                plt.plot(sac_ddpg_gap_episodic_precision_history[len(sac_ddpg_gap_episodic_precision_history) - 50:len(sac_ddpg_gap_episodic_precision_history)],label='sac_ddpg_gap')
+                plt.plot(sac_episodic_precision_history, label='sac')
+                plt.plot(ddpg_episodic_precision_history, label='ddpg')
+                plt.plot(random_episodic_precision_history, label='random')
                 plt.grid()
                 plt.legend()  # 显示上面的label
                 plt.ylabel('precision')
-                plt.savefig(r'precision_images\precision__' + str(episode + 1) + '.png')
+                plt.savefig(r'precision_images\all_precision__' + str(episode + 1) + '.png')
+                plt.clf()
+                plt.plot(sac_real_episodic_precision_history, label='sac_real')
+                plt.plot(ddpg_real_episodic_precision_history, label='ddpg_real')
+                plt.plot(sac_ddpg_gap_episodic_precision_history, label='sac_ddpg_gap')
+                plt.grid()
+                plt.legend()  # 显示上面的label
+                plt.ylabel('precision')
+                plt.savefig(r'precision_images\all_real_precision__' + str(episode + 1) + '.png')
+                plt.clf()
+            if (episode + 1) % 10 == 0:
+                # 画图
+                plt.title(str(episode + 1)+'episode')  # 标题
+
+                plt.plot(sac_episodic_precision_history[len(sac_episodic_precision_history) - 10:len(sac_episodic_precision_history)],label='sac')
+                plt.plot(ddpg_episodic_precision_history[len(ddpg_episodic_precision_history) - 10:len(ddpg_episodic_precision_history)],label='ddpg')
+                plt.plot(random_episodic_precision_history[len(random_episodic_precision_history) - 10:len(random_episodic_precision_history)],label='random')
+                plt.grid()
+                plt.legend()  # 显示上面的label
+                plt.ylabel('precision')
+                plt.savefig(r'precision_images\precision\precision__' + str(episode + 1) + '.png')
+                plt.clf()
+                plt.plot(sac_real_episodic_precision_history[len(sac_real_episodic_precision_history) - 10:len(sac_real_episodic_precision_history)],label='sac_real')
+                plt.plot(ddpg_real_episodic_precision_history[len(ddpg_real_episodic_precision_history) - 10:len(ddpg_real_episodic_precision_history)],label='ddpg_real')
+                plt.plot(sac_ddpg_gap_episodic_precision_history[len(sac_ddpg_gap_episodic_precision_history) - 10:len(sac_ddpg_gap_episodic_precision_history)],label='sac_ddpg_gap')
+                plt.grid()
+                plt.legend()  # 显示上面的label
+                plt.ylabel('precision')
+                plt.savefig(r'precision_images\real\real_precision__' + str(episode + 1) + '.png')
                 plt.clf()
 
                 if (episode + 1) % 200 == 0:
+                    numpy.save(r"train_history\sac_precision_real.npy", sac_real_episodic_precision_history)
+                    numpy.save(r"train_history\ddpg_precision_real.npy", ddpg_real_episodic_precision_history)
+                    numpy.save(r"train_history\gap.npy", sac_ddpg_gap_episodic_precision_history)
+                    numpy.save(r"train_history\sac_precision.npy", sac_episodic_precision_history)
+                    numpy.save(r"train_history\ddpg_precision.npy", ddpg_episodic_precision_history)
+                    numpy.save(r"train_history\random_precision.npy", random_episodic_precision_history)
+
                     # 画图
                     plt.title(str(episode + 1) + 'episode')  # 标题
 
                     plt.plot(sac_episodic_precision_history,label='sac')
                     plt.plot(ddpg_episodic_precision_history,label='ddpg')
                     plt.plot(random_episodic_precision_history,label='random')
-                    plt.plot(sac_real_episodic_precision_history,label='sac_real')
-                    plt.plot(ddpg_real_episodic_precision_history,label='ddpg_tral')
-                    plt.plot(sac_ddpg_gap_episodic_precision_history,label='sac_ddpg_gap')
-                    plt.savefig(r'precision__' + str(episode + 1) + '.png')
                     plt.grid()
                     plt.legend()  # 显示上面的label
                     plt.ylabel('precision')
+                    plt.savefig(r'precision_images\all_precision__' + str(episode + 1) + '.png')
+                    plt.clf()
+                    plt.plot(sac_real_episodic_precision_history,label='sac_real')
+                    plt.plot(ddpg_real_episodic_precision_history,label='ddpg_real')
+                    plt.plot(sac_ddpg_gap_episodic_precision_history,label='sac_ddpg_gap')
+                    plt.grid()
+                    plt.legend()  # 显示上面的label
+                    plt.ylabel('precision')
+                    plt.savefig(r'precision_images\all_real_precision__' + str(episode + 1) + '.png')
                     plt.clf()
 
             if (episode + 1) % 100 == 0:
@@ -444,31 +479,22 @@ class RecommendSystem:
                                 r'actor_critic_weights\ddpg\critic_' + str(episode + 1) + '.h5'
                                 )
 
-    def evaluation(self, max_episode_num, top_k=False, load_model=False):
+    def evaluation(self, max_user_id, top_k=False, load_model=False):
         print(load_model)
-        sac_episodic_precision_history = []
-        ddpg_episodic_precision_history = []
-        random_episodic_precision_history = []
-        sac_real_episodic_precision_history = []
-        ddpg_real_episodic_precision_history = []
-        sac_ddpg_gap_episodic_precision_history = []
-        for episode in range(max_episode_num):
-            # episodic reward 每轮置零
-            sac_episode_reward = 0
-            ddpg_episode_reward = 0
-            random_episode_reward = 0
-            sac_correct_count = 0
-            ddpg_correct_count = 0
-            random_correct_count = 0
+        steps = 0
+        sac_ndcg = 0
+        ddpg_ndcg = 0
+        random_ndcg = 0
 
-            steps = 0
-            sac_q_loss = 0
-            ddpg_q_loss = 0
-            sac_mean_action = 0
-            ddpg_mean_action = 0
-            # Environment 从环境里随机获得一个用户以及历史，即每轮选一个模拟用户进行一次完整的经历
-            # recommender进行推荐，user反馈reward（由评分构成，可复合多种指标进行设置）
-            user_id, short_term_ids, done = self.env.reset()
+        sac_precision = 0
+        ddpg_precision = 0
+        random_precision = 0
+        for episode in range(max_user_id):
+            # episodic reward 每轮置零
+            while episode+1 not in self.env.available_users:
+                  episode += 1
+
+            user_id, short_term_ids, done = self.env.reset(episode+1)
             # sac方式训练时的推荐空间
             self.sac_recommend_space = copy.deepcopy(self.env.recommend_space_train)
             # Ddpg方式训练时的推荐空间
@@ -486,205 +512,63 @@ class RecommendSystem:
             # print("推荐空间",self.env.recommend_space_train)
             print("推荐空间长度", len(self.env.recommend_space_train))
             print("推荐空间里的好评记录数", self.env.positive_rates_count)
-            while not done and self.env.positive_rates_count != 0:
+            while not done :
                 # 做出推荐
                 sac_item_id, sac_action, mean, log_var, sac_state = self.recommend_item_sac(user_id=user_id,
-                                                                                            history=self.sac_recommended_items)
+                                                                                            history=self.sac_recommended_items,top_k=10)
                 ddpg_item_id, ddpg_action, ddpg_state = self.recommend_item_ddpg(user_id=user_id,
-                                                                                 history=self.ddpg_recommended_items)
-                random_item_id = self.recommend_item_random()
+                                                                                 history=self.ddpg_recommended_items,top_k=10)
+                steps += 1
+                random_item_id = self.recommend_item_random(top_k=10)
 
                 # 与用户交互得到评价
-                random_recommend_rates = self.env.step(random_item_id, top_k=top_k)
+                random_rates = self.env.step(random_item_id, top_k=top_k)
                 sac_rates = self.env.step(sac_item_id, top_k=top_k)
                 ddpg_rates = self.env.step(ddpg_item_id, top_k=top_k)
 
-                # 推荐空间删除掉已推荐项目
-                self.random_recommend_space = self.random_recommend_space[self.random_recommend_space != random_item_id]
-                self.sac_recommend_space = self.sac_recommend_space[self.sac_recommend_space != sac_item_id]
-                self.ddpg_recommend_space = self.ddpg_recommend_space[self.ddpg_recommend_space != ddpg_item_id]
+                # 理想状态下的top——k推荐应有的评价
+                rates_list = self.env.recommend_space_train_rates
+                rates_list.sort(reverse=True)
+                ideal_list = rates_list[:top_k]
 
-                # 推荐历史改变
-                self.random_recommended_items['item_ids_list'].append(random_item_id)
-                self.random_recommended_items['rates_list'].append(random_recommend_rates)
-                self.sac_recommended_items['item_ids_list'].append(sac_item_id)
-                self.sac_recommended_items['rates_list'].append(sac_rates)
-                self.ddpg_recommended_items['item_ids_list'].append(ddpg_item_id)
-                self.ddpg_recommended_items['rates_list'].append(ddpg_rates)
+                sac_ndcg = self._ndcg_calculate(sac_rates,ideal_list)/steps+sac_ndcg*(steps-1)/steps
+                ddpg_ndcg = self._ndcg_calculate(ddpg_rates,ideal_list)/steps+ddpg_ndcg*(steps-1)/steps
+                random_ndcg = self._ndcg_calculate(random_rates,ideal_list)/steps+random_ndcg*(steps-1)/steps
 
-                # 已推荐项目增加
-                # print("推荐空间长度", len(self.env.recommend_space_train))
-
-                # 奖励计算
-                sac_rewards = self.reward_represent(sac_rates)
-                ddpg_rewards = self.reward_represent(ddpg_rates)
-                random_rewards = self.reward_represent(random_recommend_rates)
-
-                if sac_rewards > 0:
-                    sac_correct_count += 1
-                if ddpg_rewards > 0:
-                    ddpg_correct_count += 1
-                if random_rewards > 0:
-                    random_correct_count += 1
-
-                # 总回报准确率
-                sac_episode_reward += sac_rewards
-                ddpg_episode_reward += ddpg_rewards
-                random_episode_reward += random_rewards
-
-                # top_k情况下的reward为累计reward
-                if top_k:
-                    sac_rewards = numpy.sum(sac_rewards)
-                if top_k:
-                    ddpg_rewards = numpy.sum(ddpg_rewards)
-                # get next_state,获取下一状态
-                self.representation_model.history = self.sac_recommended_items
-                sac_next_state = self.representation_model.get_state()
-                self.representation_model.history = self.ddpg_recommended_items
-                ddpg_next_state = self.representation_model.get_state()
-
-                # 把经历加入buffer里有，之后训练网络的时候进行经历重放
-                # self.sac_buffer.append(sac_state, sac_action, mean, log_var, sac_rewards, sac_next_state, done)
-                # self.ddpg_buffer.append(ddpg_state, ddpg_action, ddpg_rewards, ddpg_next_state, done)
-
-                # 从buffer里取出批量让网络进行学习
-                # if self.sac_buffer.crt_idx > 1 or self.sac_buffer.is_full:
-                #     # 取出一个批量
-                #     sac_batch_states, sac_batch_actions, sac_batch_means, sac_batch_logvars, sac_batch_rewards, sac_batch_next_states, sac_batch_dones, weight_sac_batch, index_sac_batch = self.sac_buffer.sample(
-                #         self.batch_size)
-                #
-                #     # TD学习的目标值即q网络应该去拟合的label值
-                #     td_targets = self.sac_calculate_td_target(sac_batch_rewards, sac_batch_dones, sac_batch_states,
-                #                                               sac_batch_next_states)
-                #     # Update priority
-                #     for (p, i) in zip(td_targets, index_sac_batch):
-                #         self.sac_buffer.update_priority(abs(p[0]) + self.epsilon_for_priority, i)
-                #
-                #     sac_q_loss += self.sac_critic.train([sac_batch_means, sac_batch_logvars, sac_batch_states],
-                #                                         td_targets, weight_sac_batch)
-                #
-                #     # q对a求导再a对actor的参数求导最后得到分值对actor网络参数的导数，朝着使分值增大的方向优化，传反梯度
-                #     s_grads1, s_grads2 = self.sac_critic.dq_da([sac_batch_means, sac_batch_logvars, sac_batch_states])
-                #     self.sac_actor.train(sac_batch_states, s_grads1, s_grads1)
-                #     self.sac_actor.update_target_network()
-                #     self.sac_critic.update_target_network()
-                # if self.ddpg_buffer.crt_idx > 1 or self.ddpg_buffer.is_full:
-                #     # 取出一个批量
-                #     ddpg_batch_states, ddpg_batch_actions, ddpg_batch_rewards, ddpg_batch_next_states, ddpg_batch_dones, weight_ddpg_batch, index_ddpg_batch = self.ddpg_buffer.sample(
-                #         self.batch_size)
-                #
-                #     # TD学习的目标值即q网络应该去拟合的label值
-                #     td_targets = self.ddpg_calculate_td_target(ddpg_batch_rewards, ddpg_batch_dones, ddpg_batch_states,
-                #                                                ddpg_batch_next_states)
-                #     # 更新容器的优先级
-                #     for (p, i) in zip(td_targets, index_ddpg_batch):
-                #         self.ddpg_buffer.update_priority(abs(p[0]) + self.epsilon_for_priority, i)
-                #
-                #     ddpg_q_loss += self.ddpg_critic.train([ddpg_batch_actions, ddpg_batch_states], td_targets,
-                #                                           weight_ddpg_batch)
-                #
-                #     # q对a求导再a对actor的参数求导最后得到分值对actor网络参数的导数，朝着使分值增大的方向优化，传反梯度
-                #     s_grads = self.ddpg_critic.dq_da([ddpg_batch_actions, ddpg_batch_states])
-                #     self.ddpg_actor.train(ddpg_batch_states, s_grads)
-                #     self.ddpg_actor.update_target_network()
-                #     self.ddpg_critic.update_target_network()
-
-                sac_mean_action += numpy.sum(sac_action[0]) / (len(sac_action[0]))
-                ddpg_mean_action += numpy.sum(ddpg_action[0]) / (len(ddpg_action[0]))
-                steps += 1
-
-                print(
-                    f'recommended items : {steps}, sac_reward : {sac_rewards:+},ddpg_reward : {ddpg_rewards:+},epsilon : {self.epsilon:0.3f}',
-                    end='\r')
-                # 是否应该结束推荐
-                if steps >= self.env.positive_rates_count:
-                    done = True
-                # 计算一次经历的推荐精度
+                sac_precision = (self._cg_calculate(sac_rates)/self._cg_calculate(ideal_list))/steps + sac_precision*(steps-1)/steps
+                ddpg_precision = (self._cg_calculate(ddpg_rates)/self._cg_calculate(ideal_list))/steps + ddpg_precision*(steps-1)/steps
+                random_precision = (self._cg_calculate(random_rates)/self._cg_calculate(ideal_list))/steps + random_precision*(steps-1)/steps
+                done = True
                 if done:
-                    print("sac推荐被好评：", sac_correct_count)
-                    print("ddpg推荐被好评：", ddpg_correct_count)
-                    print("随机推荐被好评：", random_correct_count)
-                    # 积极个数推荐精度
-                    # sac_precision = int(sac_correct_count / (self.env.positive_rates_count) * 100)
-                    # ddpg_precision = int(ddpg_correct_count / (self.env.positive_rates_count) * 100)
-                    # random_precision = int(random_correct_count / (self.env.positive_rates_count) * 100)
-                    # 推荐精度之差
-                    # sac_precision_real = sac_precision-random_precision
-                    # ddpg_precision_real = ddpg_precision-random_precision
-                    # sac_ddpg_gap = sac_precision-ddpg_precision
-
-                    # 回报率推荐精度
-                    sac_precision = int(sac_episode_reward / (self.env.positive_rewards_sum) * 100)
-                    ddpg_precision = int(ddpg_episode_reward / (self.env.positive_rewards_sum) * 100)
-                    random_precision = int(random_episode_reward / (self.env.positive_rewards_sum) * 100)
-                    # 推荐精度之差
-                    sac_precision_real = sac_precision - random_precision
-                    ddpg_precision_real = ddpg_precision - random_precision
-                    sac_ddpg_gap = sac_precision - ddpg_precision
-
-                    print("推荐项目数量", steps)
-                    print(
-                        f'{episode}/{max_episode_num}, sac_precision : {sac_precision:2}%, ddpg_precision : {ddpg_precision:2}%,'
-                        f' random_precision : {random_precision:2}%, ')
-                    print(f'sac_reward:{sac_episode_reward},'
-                          f'ddpg_reward:{ddpg_episode_reward},random_reward:{random_episode_reward},all_rewards:{self.env.positive_rewards_sum}')
-                    print(f' sac_q_loss : {sac_q_loss / steps},ddpg_q_loss : {ddpg_q_loss / steps}, '
-                          f'sac_mean_action : {sac_mean_action / steps},ddpg_mean_action : {ddpg_mean_action / steps}')
-                    sac_episodic_precision_history.append(sac_precision)
-                    ddpg_episodic_precision_history.append(ddpg_precision)
-                    random_episodic_precision_history.append(random_precision)
-                    sac_real_episodic_precision_history.append(sac_precision_real)
-                    ddpg_real_episodic_precision_history.append(ddpg_precision_real)
-                    sac_ddpg_gap_episodic_precision_history.append(sac_ddpg_gap)
+                    print("sac推荐平均精度：", sac_precision)
+                    print("ddpg推荐平均精度：", ddpg_precision)
+                    print("随机推荐平均精度：", random_precision)
+                    print("sac推荐平均ndcg：", sac_ndcg)
+                    print("ddpg推荐平均ndcg：", ddpg_ndcg)
+                    print("随机推荐平均ndcg：", random_ndcg)
+                    print("推荐用戶数量", steps)
                     print()
 
-            if (episode + 1) % 50 == 0:
-                # 画图
-                plt.title(str(episode + 1) + 'episode')  # 标题
 
-                plt.plot(sac_episodic_precision_history[
-                         len(sac_episodic_precision_history) - 50:len(sac_episodic_precision_history)], label='sac')
-                plt.plot(ddpg_episodic_precision_history[
-                         len(ddpg_episodic_precision_history) - 50:len(ddpg_episodic_precision_history)], label='ddpg')
-                plt.plot(random_episodic_precision_history[
-                         len(random_episodic_precision_history) - 50:len(random_episodic_precision_history)],
-                         label='random')
-                plt.plot(sac_real_episodic_precision_history[
-                         len(sac_real_episodic_precision_history) - 50:len(sac_real_episodic_precision_history)],
-                         label='sac_real')
-                plt.plot(ddpg_real_episodic_precision_history[
-                         len(ddpg_real_episodic_precision_history) - 50:len(ddpg_real_episodic_precision_history)],
-                         label='ddpg_tral')
-                plt.plot(sac_ddpg_gap_episodic_precision_history[len(sac_ddpg_gap_episodic_precision_history) - 50:len(
-                    sac_ddpg_gap_episodic_precision_history)], label='sac_ddpg_gap')
+    def _cg_calculate(self,rate_list):
+        result = 0
+        for rate in rate_list:
+            result += rate
+        return result
 
-                plt.legend()  # 显示上面的label
-                plt.ylabel('precision')
-                plt.savefig(r'precision_images\precision__' + str(episode + 1) + '.png')
-                plt.clf()
+    def _dcg_calculate(self,rate_list):
+        result = 0
+        i = 1
+        for rate in rate_list:
+            result += rate/(numpy.log2(i+1))
+            i += 1
+        return result
 
-                if (episode + 1) % 200 == 0:
-                    # 画图
-                    plt.title(str(episode + 1) + 'episode')  # 标题
+    def _ndcg_calculate(self,real_list,ideal_list):
+        dcg = self._dcg_calculate(real_list)
+        idcg = self._dcg_calculate(ideal_list)
+        return dcg/idcg
 
-                    plt.plot(sac_episodic_precision_history, label='sac')
-                    plt.plot(ddpg_episodic_precision_history, label='ddpg')
-                    plt.plot(random_episodic_precision_history, label='random')
-                    plt.plot(sac_real_episodic_precision_history, label='sac_real')
-                    plt.plot(ddpg_real_episodic_precision_history, label='ddpg_tral')
-                    plt.plot(sac_ddpg_gap_episodic_precision_history, label='sac_ddpg_gap')
-                    plt.savefig(r'precision__' + str(episode + 1) + '.png')
-                    plt.legend()  # 显示上面的label
-                    plt.ylabel('precision')
-                    plt.clf()
-
-            if (episode + 1) % 100 == 0:
-                self.save_model(r'actor_critic_weights\sac\actor_mean' + str(episode + 1) + '.h5',
-                                r'actor_critic_weights\sac\actor_logvar' + str(episode + 1) + '.h5',
-                                r'actor_critic_weights\sac\critic_' + str(episode + 1) + '.h5',
-                                r'actor_critic_weights\ddpg\actor_' + str(episode + 1) + '.h5',
-                                r'actor_critic_weights\ddpg\critic_' + str(episode + 1) + '.h5'
-                                )
 
     def save_model(self, actor_mean_path, actor_logvar_path, sac_critic_path,ddpg_actor_path,ddpg_critic_path):
         self.sac_actor.save_weights(actor_mean_path, actor_logvar_path)
