@@ -78,10 +78,10 @@ recommend_system.ddpg_actor.load_weights(r'actor_critic_weights/ddpg/actor_5000.
 recommend_system.sac_critic.load_weights(r'actor_critic_weights/sac/critic_5000.h5')
 recommend_system.sac_actor.load_weights(r'actor_critic_weights/sac/actor_mean5000.h5',r'actor_critic_weights/sac/actor_logvar5000.h5')
 
-recommend_system.ddpg_critic.load_weights(r'actor_critic_weights/ddpg/critic_5000.h5')
-recommend_system.ddpg_actor.load_weights(r'actor_critic_weights/ddpg/actor_5000.h5')
-recommend_system.sac_critic.load_weights(r'actor_critic_weights/sac/critic_5000.h5')
-recommend_system.sac_actor.load_weights(r'actor_critic_weights/sac/actor_mean5000.h5',r'actor_critic_weights/sac/actor_logvar5000.h5')
+recommend_system_eval.ddpg_critic.load_weights(r'actor_critic_weights/ddpg/critic_5000.h5')
+recommend_system_eval.ddpg_actor.load_weights(r'actor_critic_weights/ddpg/actor_5000.h5')
+recommend_system_eval.sac_critic.load_weights(r'actor_critic_weights/sac/critic_5000.h5')
+recommend_system_eval.sac_actor.load_weights(r'actor_critic_weights/sac/actor_mean5000.h5',r'actor_critic_weights/sac/actor_logvar5000.h5')
 
 
 
